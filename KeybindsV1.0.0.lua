@@ -12,12 +12,12 @@ local Services = setmetatable({}, {
 
 local InputService = Services.UserInputService
 local Input = {}
-local binds = {}
+getgenv().binds = {}
 
 -------------------->> Methods <<--------------------
 
 function Input.BindKeyPresses(name, callback, ...)
-	if binds[name] then
+	if getgenv().binds[name] then
 		print("A keybind already exists with the same name!")
 		return
 	end
@@ -25,7 +25,7 @@ function Input.BindKeyPresses(name, callback, ...)
 	local keys = table.pack(...)
 	keys.n = nil
 	
-	binds[name] = InputService.InputBegan:Connect(function(input, gpc)
+	getgenv().binds[name] = InputService.InputBegan:Connect(function(input, gpc)
 		if input.KeyCode and input.KeyCode == keys[#keys] then 
 			if gpc then return end
 			for i, key in pairs(keys) do 
@@ -40,14 +40,14 @@ function Input.BindKeyPresses(name, callback, ...)
 end
 
 function Input.UnbindKeyPresses(name)
-	if binds[name] then 
-		binds[name]:Disconnect()
-		binds[name] = nil
+	if getgenv().binds[name] then 
+		getgenv().binds[name]:Disconnect()
+		getgenv().binds[name] = nil
 	end
 end
 
 function Input:CheckKeyBindExist(name)
-	if binds[name] then
+	if getgenv().binds[name] then
 		return true
 	else
 		return false
