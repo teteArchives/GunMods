@@ -39,6 +39,7 @@ end
 local function setMods(weaponConfig)
     setConfig(weaponConfig, "AmmoCapacity", getgenv().infiniteValue)
     setConfig(weaponConfig, "FireMode", "Automatic")
+    setConfig(weaponConfig, "ShotEffect", "Arrow")
     setConfig(weaponConfig, "HitDamage", getgenv().infiniteValue)
     setConfig(weaponConfig, "GravityFactor", getgenv().GravityFactor)
     setConfig(weaponConfig, "RecoilDelay", 0)
