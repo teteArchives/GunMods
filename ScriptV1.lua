@@ -73,6 +73,8 @@ local function setUpWeapons(get, makeconnection)
                 setMods(weaponConfig)
 
                 pcall(function ()
+                    weapon.CurrentAmmo.Value = 999999
+                    
                     if makeconnection == true then
                         local function onDestroying()
                             if getgenv().ModConnections[Player.Name.."Destroyed"] ~= nil then
@@ -99,13 +101,6 @@ local function setUpWeapons(get, makeconnection)
                                 weapon.CurrentAmmo.Value = 999999
                             end)
                         end
-
-                        task.spawn(function ()
-                            player.Character.Humanoid:EquipTool(weapon)
-                            weapon.CurrentAmmo.Value = 2
-                            weapon:Activate()
-                            weapon.CurrentAmmo.Value = 999999
-                        end)
                     end
                 end)
             end
