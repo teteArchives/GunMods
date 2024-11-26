@@ -63,7 +63,7 @@ local function setMods(weaponConfig)
     setConfig(weaponConfig, "MinSpread", 0)
     setConfig(weaponConfig, "MaxSpread", 0)
     setConfig(weaponConfig, "FullDamageDistance", getgenv().infiniteValue)
-    setConfig(weaponConfig, "ZeroDamageDistance", 0)
+    setConfig(weaponConfig, "ZeroDamageDistance", getgenv().infiniteValue)
 end
 
 local function setUpWeapons(get, makeconnection)
