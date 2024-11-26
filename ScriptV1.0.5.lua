@@ -20,12 +20,12 @@ local Services = setmetatable({}, {
 })
 
 local Players           = Services.Players
-local ReplicatedStorage = Services.ReplicatedStorage
+local UserInputService  = Services.UserInputService
 
 -------------------->> Variables <<--------------------
 
 local Player = Players.LocalPlayer
-local Weapons = ReplicatedStorage.Assets.Weapons
+local Mouse1Down = false
 getgenv().ModConnections = {}
 
 -------------------->> Functions <<--------------------
@@ -37,9 +37,9 @@ local function setConfig(weaponConfig, name, val)
 end
 
 local function setMods(weaponConfig)
-    setConfig(weaponConfig, "AmmoCapacity", 999999)
+    setConfig(weaponConfig, "AmmoCapacity", getgenv().infiniteValue)
     setConfig(weaponConfig, "FireMode", "Automatic")
-    setConfig(weaponConfig, "HitDamage", 999999)
+    setConfig(weaponConfig, "HitDamage", getgenv().infiniteValue)
     setConfig(weaponConfig, "GravityFactor", 0)
     setConfig(weaponConfig, "RecoilDelay", 0)
     setConfig(weaponConfig, "RecoilDelayTime", 0)
@@ -47,33 +47,33 @@ local function setMods(weaponConfig)
     setConfig(weaponConfig, "RecoilMin", 0)
     setConfig(weaponConfig, "ShotCooldown", 0)
     setConfig(weaponConfig, "TotalRecoilMax", 0)
-    setConfig(weaponConfig, "BulletSpeed", 999999)
-    setConfig(weaponConfig, "ChargeRate", 999999)
-    setConfig(weaponConfig, "DischargeRate", 999999)
-    setConfig(weaponConfig, "BlastDamage", 999999)
-    setConfig(weaponConfig, "BlastPressure", 999999)
-    setConfig(weaponConfig, "BlastRadius", 50)
-    setConfig(weaponConfig, "NumProjectiles", 3)
+    setConfig(weaponConfig, "BulletSpeed", getgenv().infiniteValue)
+    setConfig(weaponConfig, "ChargeRate", getgenv().infiniteValue)
+    setConfig(weaponConfig, "DischargeRate", getgenv().infiniteValue)
+    setConfig(weaponConfig, "BlastDamage", getgenv().infiniteValue)
+    setConfig(weaponConfig, "BlastPressure", getgenv().infiniteValue)
+    setConfig(weaponConfig, "BlastRadius", getgenv().BlastRadius)
+    setConfig(weaponConfig, "NumProjectiles", getgenv().NumProjectiles)
     setConfig(weaponConfig, "CrosshairScale", 0)
-    setConfig(weaponConfig, "MaxDistance", 999999)
+    setConfig(weaponConfig, "MaxDistance", getgenv().infiniteValue)
     setConfig(weaponConfig, "MaxSpread", 0)
-    setConfig(weaponConfig, "FullDamageDistance", 999999)
+    setConfig(weaponConfig, "FullDamageDistance", getgenv().infiniteValue)
     setConfig(weaponConfig, "ZeroDamageDistance", 0)
 end
 
 local function setUpWeapons(get, makeconnection)
-    local Weapons = {}
+    local weapons = {}
 
     for _, weapon in pairs(get:GetChildren()) do
         if weapon:IsA("Tool") then
             local weaponConfig = weapon:FindFirstChild("Configuration")
     
             if weaponConfig ~= nil then
-                Weapons[weapon.Name] = weapon
+                weapons[weapon.Name] = weapon
                 setMods(weaponConfig)
 
                 pcall(function ()
-                    weapon.CurrentAmmo.Value = 999999
+                    weapon.CurrentAmmo.Value = getgenv().infiniteValue
                     
                     if makeconnection == true then
                         local function onDestroying()
@@ -89,6 +89,14 @@ local function setUpWeapons(get, makeconnection)
                                 getgenv().ModConnections[weapon.Name.."Changed"]:Disconnect()
                                 getgenv().ModConnections[weapon.Name.."Changed"] = nil
                             end
+                            if getgenv().ModConnections[Player.Name.."MouseButton1Down"] == nil then
+                                getgenv().ModConnections[Player.Name.."MouseButton1Down"]:Disconnect()
+                                getgenv().ModConnections[Player.Name.."MouseButton1Down"] = nil
+                            end
+                            if getgenv().ModConnections[Player.Name.."MouseButton1Up"] ~= nil then
+                                getgenv().ModConnections[Player.Name.."MouseButton1Up"]:Disconnect()
+                                getgenv().ModConnections[Player.Name.."MouseButton1Up"] = nil
+                            end
                             print("Destroyed "..weapon.Name.." + "..Player.Name)
                             setUpWeapons(get, makeconnection)
                         end
@@ -98,12 +106,48 @@ local function setUpWeapons(get, makeconnection)
                         end
                         if getgenv().ModConnections[weapon.Name.."Changed"] == nil then
                             getgenv().ModConnections[weapon.Name.."Changed"] = weapon.Activated:Connect(function ()
-                                weapon.CurrentAmmo.Value = 999999
+                                weapon.CurrentAmmo.Value = getgenv().infiniteValue
                             end)
                         end
                     end
                 end)
             end
+        end
+    end
+
+    if makeconnection == true then
+        if getgenv().ModConnections[Player.Name.."MouseButton1Down"] == nil then
+            getgenv().ModConnections[Player.Name.."MouseButton1Down"] = UserInputService.InputBegan:Connect(function (input, gameProcessed)
+                if not gameProcessed then
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        Mouse1Down = true
+                        while task.wait() and Mouse1Down == true do
+                            local weapon = Player.Character:FindFirstChildOfClass("Tool")
+                            
+                            if weapon ~= nil then
+                                if weapon.Name ~= "Railgun" then
+                                    weapon:Activate()
+                                    weapon:Deactivate()
+                                else
+                                    weapon:Activate()
+                                    task.wait()
+                                    weapon:Deactivate()
+                                end
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+
+        if getgenv().ModConnections[Player.Name.."MouseButton1Up"] == nil then
+            getgenv().ModConnections[Player.Name.."MouseButton1Up"] = UserInputService.InputEnded:Connect(function (input, gameProcessed)
+                if not gameProcessed then
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        Mouse1Down = false
+                    end
+                end
+            end)
         end
     end
 
@@ -113,7 +157,15 @@ local function setUpWeapons(get, makeconnection)
                 getgenv().ModConnections[Player.Name.."Destroyed"]:Disconnect()
                 getgenv().ModConnections[Player.Name.."Destroyed"] = nil
             end
-            for i, v in pairs(Weapons) do
+            if getgenv().ModConnections[Player.Name.."MouseButton1Down"] == nil then
+                getgenv().ModConnections[Player.Name.."MouseButton1Down"]:Disconnect()
+                getgenv().ModConnections[Player.Name.."MouseButton1Down"] = nil
+            end
+            if getgenv().ModConnections[Player.Name.."MouseButton1Up"] ~= nil then
+                getgenv().ModConnections[Player.Name.."MouseButton1Up"]:Disconnect()
+                getgenv().ModConnections[Player.Name.."MouseButton1Up"] = nil
+            end
+            for i, v in pairs(weapons) do
                 if getgenv().ModConnections[i.."Destroyed"] ~= nil then
                     getgenv().ModConnections[i.."Destroyed"]:Disconnect()
                     getgenv().ModConnections[i.."Destroyed"] = nil
@@ -135,6 +187,7 @@ local function setUpWeapons(get, makeconnection)
 end
 
 -------------------->> Main <<--------------------
+
 pcall(function()
     Player.Character.Humanoid:UnequipTools()
 end)
