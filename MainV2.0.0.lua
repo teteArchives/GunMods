@@ -81,8 +81,8 @@ local ReplicatedStorage = Services.ReplicatedStorage
 
 -------------------->> Variables <<--------------------
 
-local KeybindsModule = loadstring(game:HttpGet("https://raw.githubusercontent.com/teteArchives/GunMods/refs/heads/main/Keybinds.lua", true))()
-local GunModlink = "https://raw.githubusercontent.com/teteArchives/GunMods/refs/heads/main/ScriptV1.1.0.lua"
+local KeybindsModule = loadstring(game:HttpGet("https://raw.githubusercontent.com/teteArchives/GunMods/refs/heads/main/KeybindsV1.0.0.lua", true))()
+local GunModlink = "https://raw.githubusercontent.com/teteArchives/GunMods/refs/heads/main/ScriptV1.5.0.lua"
 local Weapons = ReplicatedStorage.Assets.Weapons
 local Player = Players.LocalPlayer
 
@@ -153,9 +153,10 @@ local function makeKeyBind(keybindName, keybindCallback, keys)
 end
 
 local function destroyKeyBind(keybindName)
-    pcall(function()
-        KeybindsModule.UnbindKeyPresses(keybindName.Name)
-    end)
+    if getgenv().binds[keybindName] ~= nil then 
+		getgenv().binds[keybindName]:Disconnect()
+		getgenv().binds[keybindName] = nil
+	end
 end
 
 local function loadScript()
@@ -163,10 +164,9 @@ local function loadScript()
 end
 
 getgenv().DestroyGUNMODS = function ()
-    getgenv().DestroyGUNMODS = nil
-    destroyKeyBind("KeybindText")
-    destroyKeyBind("DestroyText")
-    destroyKeyBind("HideText")
+    repeat destroyKeyBind("KeybindText") task.wait() until getgenv().binds["KeybindText"] == nil
+    repeat destroyKeyBind("DestroyText") task.wait() until getgenv().binds["DestroyText"] == nil
+    repeat destroyKeyBind("HideText") task.wait() until getgenv().binds["HideText"] == nil
 
     pcall(function ()
         for i, v in pairs(getgenv().ModConnections) do
@@ -193,21 +193,18 @@ getgenv().DestroyGUNMODS = function ()
                 local Configuration = v:FindFirstChild("Configuration")
 
                 if Configuration ~= nil then
-                    local weapon = player.Backpack:FindFirstChild(v.Name) -- changed weaponsFolder to player.Backpack
+                    local weapon = Player.Backpack:FindFirstChild(v.Name) -- changed weaponsFolder to player.Backpack
                     local weaponConfig = weapon:FindFirstChild("Configuration")
-                    print(weapon, weaponConfig)
+                    
                     if weapon ~= nil and weaponConfig ~= nil then
                         for _, Setting in pairs(Configuration:GetChildren()) do
-                            print(Setting)
-                            if Setting.ClassName:match("Value") then
-                                if weaponConfig:FindFirstChild(Setting.Name) ~= nil then
-                                    weaponConfig:FindFirstChild(Setting.Name).Value = Setting.Value
-                                end
-                            end
+                            pcall(function ()
+                                weaponConfig:FindFirstChild(Setting.Name).Value = Setting.Value
+                            end)
                         end
 
                         pcall(function ()
-                            weapon.AmmoCapacity.Value = Configuration:FindFirstChild("AmmoCapacity").Value
+                            weapon.CurrentAmmo.Value = Configuration:FindFirstChild("AmmoCapacity").Value
                         end)
                     end
                 end
@@ -223,6 +220,7 @@ getgenv().DestroyGUNMODS = function ()
 
     MainGui:Destroy()
     print("Destroyed gun mods! - GigaHub Inc.")
+    getgenv().DestroyGUNMODS = nil
 end
 
 -------------------->> Main <<--------------------
