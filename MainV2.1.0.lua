@@ -12,6 +12,9 @@ getgenv().AllGunExplosive = false
 getgenv().AllActLikeShotgun = false
 ]]
 
+local mt = getrawmetatable(game);
+setreadonly(mt, false)
+
 local function ReturnKeyBindsAtString(Binds_Table)
 	local NumerOfKeys = #Binds_Table 
 	local CombinedMsg = ""
@@ -41,6 +44,11 @@ local scriptKeybinds = {
 
 -------------------->> Checks <<--------------------
 
+pcall(function()
+    if getgenv().normalMt ~= nil then
+        mt.__index = getgenv().normalMt
+    end
+end)
 pcall(function ()
     getgenv().DestroyGUNMODS()
 end)
@@ -96,7 +104,7 @@ local ReplicatedStorage = Services.ReplicatedStorage
 -------------------->> Variables <<--------------------
 
 local KeybindsModule = loadstring(game:HttpGet("https://raw.githubusercontent.com/teteArchives/GunMods/refs/heads/main/KeybindsV1.0.0.lua", true))()
-local GunModlink = "https://raw.githubusercontent.com/teteArchives/GunMods/refs/heads/main/ScriptV2.0.0.lua"
+local GunModlink = "https://raw.githubusercontent.com/teteArchives/GunMods/refs/heads/main/ScriptV2.0.5.lua"
 local Weapons = ReplicatedStorage.Assets.Weapons
 local Player = Players.LocalPlayer
 
@@ -181,6 +189,12 @@ getgenv().DestroyGUNMODS = function ()
     repeat destroyKeyBind("KeybindText") task.wait() until getgenv().binds["KeybindText"] == nil
     repeat destroyKeyBind("DestroyText") task.wait() until getgenv().binds["DestroyText"] == nil
     repeat destroyKeyBind("HideText") task.wait() until getgenv().binds["HideText"] == nil
+    
+    pcall(function()
+        if getgenv().normalMt ~= nil then
+            mt.__index = getgenv().normalMt
+        end
+    end)
 
     pcall(function ()
         for i, v in pairs(getgenv().ModConnections) do
