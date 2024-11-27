@@ -1,5 +1,14 @@
 -- Game Name: فورت نايت العرب 
 
+local mt = getrawmetatable(game);
+setreadonly(mt, false)
+
+pcall(function()
+    if getgenv().normalMt ~= nil then
+        mt.__index = getgenv().normalMt
+    end
+end)
+
 pcall(function ()
     for i, v in pairs(getgenv().ModConnections) do
         v:Disconnect()
@@ -48,6 +57,7 @@ local function createNewMod(compareName, instanceName, name, val, weaponConfig)
 end
 
 local function setConfig(weaponConfig, name, val)
+    
     if weaponConfig:FindFirstChild(name) ~= nil then
        if name == "MinSpread" or name == "MaxSpread" then
             if getgenv().AllActLikeShotgun == true then
@@ -78,7 +88,7 @@ local function setConfig(weaponConfig, name, val)
 end
 
 local function setMods(weaponConfig)
-    setConfig(weaponConfig, "AmmoCapacity", getgenv().infiniteValue)
+    --setConfig(weaponConfig, "AmmoCapacity", getgenv().infiniteValue)
     setConfig(weaponConfig, "FireMode", "Automatic")
     setConfig(weaponConfig, "ShotEffect", "Arrow")
     setConfig(weaponConfig, "HitDamage", getgenv().infiniteValue)
@@ -112,6 +122,34 @@ end
 local function setUpWeapons(get, makeconnection)
     local weapons = {}
 
+    local oldindex = mt.__index;
+
+    if getgenv().normalMt == nil then
+       getgenv().normalMt = oldindex 
+    end
+
+    mt.__index = function(a, b)
+        if tostring(a) == "CurrentAmmo" then
+            if tostring(b) == "Value" then
+                return math.huge;
+            end
+        end
+    
+        if tostring(a) == "AmmoCapacity" then
+            if tostring(b) == "Value" then
+                return math.huge;
+            end
+        end
+
+        if tostring(a) == "BulletSpeed" then
+            if tostring(b) == "Value" then
+                return math.huge;
+            end
+        end
+
+        return oldindex(a, b)
+    end
+
     for _, weapon in pairs(get:GetChildren()) do
         if weapon:IsA("Tool") then
             local weaponConfig = weapon:FindFirstChild("Configuration")
@@ -121,8 +159,6 @@ local function setUpWeapons(get, makeconnection)
                 setMods(weaponConfig)
 
                 pcall(function ()
-                    weapon.CurrentAmmo.Value = getgenv().infiniteValue
-                    
                     if makeconnection == true then
                         local function onDestroying()
                             pcall(function ()
@@ -139,10 +175,6 @@ local function setUpWeapons(get, makeconnection)
                                 getgenv().ModConnections[weapon.Name.."Destroyed"]:Disconnect()
                                 getgenv().ModConnections[weapon.Name.."Destroyed"] = nil
                             end
-                            if getgenv().ModConnections[weapon.Name.."Changed"] ~= nil then
-                                getgenv().ModConnections[weapon.Name.."Changed"]:Disconnect()
-                                getgenv().ModConnections[weapon.Name.."Changed"] = nil
-                            end
                             if getgenv().ModConnections[Player.Name.."MouseButton1Down"] == nil then
                                 getgenv().ModConnections[Player.Name.."MouseButton1Down"]:Disconnect()
                                 getgenv().ModConnections[Player.Name.."MouseButton1Down"] = nil
@@ -157,11 +189,6 @@ local function setUpWeapons(get, makeconnection)
 
                         if getgenv().ModConnections[weapon.Name.."Destroyed"] == nil then
                             getgenv().ModConnections[weapon.Name.."Destroyed"] = weapon.Destroying:Connect(onDestroying)
-                        end
-                        if getgenv().ModConnections[weapon.Name.."Changed"] == nil then
-                            getgenv().ModConnections[weapon.Name.."Changed"] = weapon.Activated:Connect(function ()
-                                weapon.CurrentAmmo.Value = getgenv().infiniteValue
-                            end)
                         end
                     end
                 end)
@@ -229,10 +256,6 @@ local function setUpWeapons(get, makeconnection)
                 if getgenv().ModConnections[i.."Destroyed"] ~= nil then
                     getgenv().ModConnections[i.."Destroyed"]:Disconnect()
                     getgenv().ModConnections[i.."Destroyed"] = nil
-                end
-                if getgenv().ModConnections[i.."Changed"] ~= nil then
-                    getgenv().ModConnections[i.."Changed"]:Disconnect()
-                    getgenv().ModConnections[i.."Changed"] = nil
                 end
                 print("Destroyed "..i.." + "..Player.Name)
             end
