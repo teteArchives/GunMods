@@ -7,6 +7,9 @@ getgenv().NumProjectiles = 10
 getgenv().GravityFactor = 0
 getgenv().ZoomFactor = 3
 getgenv().CrosshairScale = 0
+getgenv().AllGunHaveScope = false
+getgenv().AllGunExplosive = false
+getgenv().AllActLikeShotgun = false
 ]]
 
 local function ReturnKeyBindsAtString(Binds_Table)
@@ -55,6 +58,14 @@ pcall(function ()
         end
     end
 end)
+pcall(function ()
+    for i, v in pairs(getgenv().Parts) do
+        print(v)
+        v:Destroy()
+        print("Destroyed!")
+    end
+end)
+
 getgenv().Keybinds = getgenv().Keybinds or {Enum.KeyCode.LeftControl, Enum.KeyCode.U}
 getgenv().infiniteValue = getgenv().infiniteValue or 999999999999
 getgenv().BlastRadius = getgenv().BlastRadius or 150
@@ -62,6 +73,9 @@ getgenv().NumProjectiles = getgenv().NumProjectiles or 10
 getgenv().GravityFactor = getgenv().GravityFactor or 0
 getgenv().ZoomFactor = getgenv().ZoomFactor or 3
 getgenv().CrosshairScale = getgenv().CrosshairScale or 0
+getgenv().AllGunHaveScope = getgenv().AllGunHaveScope or false
+getgenv().AllGunExplosive = getgenv().AllGunExplosive or false
+getgenv().AllActLikeShotgun = getgenv().AllActLikeShotgun or false
 
 -------------------->> Services <<--------------------
 
@@ -82,7 +96,7 @@ local ReplicatedStorage = Services.ReplicatedStorage
 -------------------->> Variables <<--------------------
 
 local KeybindsModule = loadstring(game:HttpGet("https://raw.githubusercontent.com/teteArchives/GunMods/refs/heads/main/KeybindsV1.0.0.lua", true))()
-local GunModlink = "https://raw.githubusercontent.com/teteArchives/GunMods/refs/heads/main/ScriptV1.5.0.lua"
+local GunModlink = "https://raw.githubusercontent.com/teteArchives/GunMods/refs/heads/main/ScriptV2.0.0.lua"
 local Weapons = ReplicatedStorage.Assets.Weapons
 local Player = Players.LocalPlayer
 
