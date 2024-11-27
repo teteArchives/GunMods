@@ -5,6 +5,9 @@ pcall(function ()
         v:Disconnect()
         getgenv().ModConnections[i] = nil
     end
+    for i, v in pairs(getgenv().Parts) do
+        v:Destroy()
+    end
 end)
 
 -------------------->> Services <<--------------------
@@ -27,12 +30,50 @@ local UserInputService  = Services.UserInputService
 local Player = Players.LocalPlayer
 local Mouse1Down = false
 getgenv().ModConnections = {}
+getgenv().Parts = {}
 
 -------------------->> Functions <<--------------------
 
+local function createValue(instanceName, valueName, val, parent)
+    local Value = Instance.new(instanceName, parent)
+    Value.Name = valueName
+    Value.Value = val
+    table.insert(getgenv().Parts, Value)
+end
+
+local function createNewMod(compareName, instanceName, name, val, weaponConfig)
+    if name == compareName then
+        createValue(instanceName, name, val, weaponConfig)
+    end
+end
+
 local function setConfig(weaponConfig, name, val)
     if weaponConfig:FindFirstChild(name) ~= nil then
+       if name == "MinSpread" or name == "MaxSpread" then
+            if getgenv().AllActLikeShotgun == true then
+                weaponConfig:FindFirstChild(name).Value = 4
+                return
+            end
+       end
         weaponConfig:FindFirstChild(name).Value = val
+        return
+    end
+    createNewMod("BulletSpeed", "NumberValue", name, val, weaponConfig)
+    createNewMod("CrosshairScale", "NumberValue", name, val, weaponConfig)
+    createNewMod("NumProjectiles", "IntValue", name, val, weaponConfig)
+    if getgenv().AllActLikeShotgun == true then
+        createNewMod("MinSpread", "NumberValue", name, 4, weaponConfig)
+        createNewMod("MaxSpread", "NumberValue", name, 4, weaponConfig)
+   end
+    if getgenv().AllGunHaveScope == true then
+        createNewMod("HasScope", "BoolValue", name, val, weaponConfig)
+        createNewMod("ZoomFactor", "NumberValue", name, val, weaponConfig)
+    end
+    if getgenv().AllGunExplosive == true then
+        createNewMod("BlastPressure", "IntValue", name, val, weaponConfig)
+        createNewMod("BlastRadius", "NumberValue", name, val, weaponConfig)
+        createNewMod("BlastDamage", "NumberValue", name, val, weaponConfig)
+        createNewMod("ExplodeOnImpact", "BoolValue", name, val, weaponConfig)
     end
 end
 
@@ -54,6 +95,7 @@ local function setMods(weaponConfig)
     setConfig(weaponConfig, "BlastDamage", getgenv().infiniteValue)
     setConfig(weaponConfig, "BlastPressure", getgenv().infiniteValue)
     setConfig(weaponConfig, "BlastRadius", getgenv().BlastRadius)
+    setConfig(weaponConfig, "ExplodeOnImpact", true)
     setConfig(weaponConfig, "NumProjectiles", getgenv().NumProjectiles)
     setConfig(weaponConfig, "CrosshairScale", getgenv().CrosshairScale)
     setConfig(weaponConfig, "ZoomFactor", getgenv().ZoomFactor)
@@ -64,6 +106,7 @@ local function setMods(weaponConfig)
     setConfig(weaponConfig, "MaxSpread", 0)
     setConfig(weaponConfig, "FullDamageDistance", getgenv().infiniteValue)
     setConfig(weaponConfig, "ZeroDamageDistance", getgenv().infiniteValue)
+    setConfig(weaponConfig, "HasScope", true)
 end
 
 local function setUpWeapons(get, makeconnection)
@@ -82,6 +125,12 @@ local function setUpWeapons(get, makeconnection)
                     
                     if makeconnection == true then
                         local function onDestroying()
+                            pcall(function ()
+                                for i, v in pairs(getgenv().Parts) do
+                                    v:Destroy()
+                                end
+                            end)
+
                             if getgenv().ModConnections[Player.Name.."Destroyed"] ~= nil then
                                 getgenv().ModConnections[Player.Name.."Destroyed"]:Disconnect()
                                 getgenv().ModConnections[Player.Name.."Destroyed"] = nil
@@ -158,6 +207,12 @@ local function setUpWeapons(get, makeconnection)
 
     if makeconnection == true and getgenv().ModConnections[Player.Name.."Destroyed"] == nil then
         local function onDestroying()
+            pcall(function ()
+                for i, v in pairs(getgenv().Parts) do
+                    v:Destroy()
+                end
+            end)
+
             if getgenv().ModConnections[Player.Name.."Destroyed"] ~= nil then
                 getgenv().ModConnections[Player.Name.."Destroyed"]:Disconnect()
                 getgenv().ModConnections[Player.Name.."Destroyed"] = nil
@@ -182,7 +237,6 @@ local function setUpWeapons(get, makeconnection)
                 print("Destroyed "..i.." + "..Player.Name)
             end
             print("Destroyed "..Player.Name)
-            setUpWeapons(get, makeconnection)
         end
 
         if getgenv().ModConnections[Player.Name.."Destroyed"] == nil then
